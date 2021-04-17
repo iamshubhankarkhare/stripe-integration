@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
-const stripe = require('stripe')('sk_test_...');
+const stripe = require('stripe')(
+  'sk_test_51IgnbRSEzonCch7wJInwftRpuQdSKUWHgzbVmzWwPwvg2RSYwJgsuX1zu8XxTr8ZAZg4KdcbQM7nZENH0MPTcMdG000dwBzVvy'
+);
 
 app.use(express.json());
 app.use(cors());
@@ -14,7 +16,7 @@ app.get('/', function (req, res) {
 app.post('/payment', (req, res) => {
   const { product, token } = req.body;
   console.log(product);
-  const idempontencyKey = uuidv4();
+  // const idempontencyKey = uuidv4();
 
   return stripe.customers
     .create({
@@ -22,15 +24,18 @@ app.post('/payment', (req, res) => {
       source: token.id,
     })
     .then((customer) => {
-      console.log(customer.id);
-        stripe.charges.create({
-            amount:product.price *100,
-            currency:usd,
-            customer:customer.id,
-            receipt_email:token.email,
-            description:product.name,
-        },{idempontencyKey})
-    }).then(result=>res.status(200).json(result))
+      stripe.charges.create(
+        {
+          amount: product.price * 100,
+          currency: 'usd',
+          customer: customer.id,
+          receipt_email: token.email,
+          description: product.name,
+        },
+        { idempontencyKey: uuidv4() }
+      );
+    })
+    .then((result) => res.status(200).json(result))
     .catch((error) => console.error(error));
 });
 
